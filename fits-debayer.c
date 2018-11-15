@@ -51,16 +51,24 @@ int main (int argc, char ** argv)
 
 	/* Load File */
 	fitsfile * fptr;
-	char card[FLEN_CARD];
-	int status = 0, nkeys, ii;
+	int status = 0;
 
 	fits_open_file(&fptr, argv[1], READONLY, &status);
+
+	/* Print header */
+	char card[FLEN_CARD];
+	int nkeys;
+
+	fits_get_hdrspace(fptr, &nkeys, NULL, &status);
+
+	for (int i = 1; i < nkeys; i++) {
+		fits_read_record(fptr, i, card, &status);
+		printf("%s\n", card);
+	}
 
 	/* Get image size */
 	long naxis[2];
 	fits_get_img_size(fptr, 2, naxis, &status);
-	
-	printf("Image is %d x %d\n\n", naxis[0], naxis[1]);
 
 	/* Read image */
 	long * imagearr = allocate_long_array(naxis[0] * naxis[1]);
@@ -79,12 +87,12 @@ int main (int argc, char ** argv)
 	int pos = 0;
 
 	for (int ri = 0; ri < naxis[1]; ri += 2) {
-			for (int rj = 0; rj < naxis[0]; rj += 2) {
-					pos = (ri * naxis[1]) + rj;
-					red[pos + 1] = red[pos];
-					red[pos + naxis[1]] = red[pos];
-					red[pos + naxis[1] + 1] = red[pos];
-			}
+		for (int rj = 0; rj < naxis[0]; rj += 2) {
+			pos = (ri * naxis[0]) + rj;
+			red[pos + 1] = red[pos];
+			red[pos + naxis[0]] = red[pos];
+			red[pos + naxis[0] + 1] = red[pos];
+		}
 	}
 
 	fitsfile * red_fp;
@@ -107,8 +115,19 @@ int main (int argc, char ** argv)
 	long * green = allocate_long_array(naxis[0] * naxis[1]);
 	memcpy(green, imagearr, sizeof(long) * naxis[0] * naxis[1]);
 
-	for (int gi = 1; gi < nelements; gi += 2)
-		green[gi - 1] = green[gi];
+	for (int gi = 1; gi < naxis[1]; gi++) {
+		for (int gj = 1; gj < naxis[0]; gj += 2) {
+			pos = (gi * naxis[0]) + gj;
+			green[pos - 1] = green[pos];
+		}
+
+		gi++;
+
+		for (int gj = 0; gj < naxis[0]; gj += 2) {
+			pos = (gi * naxis[0]) + gj;
+			green[pos + 1] = green[pos];
+		}
+	}
 
 	fitsfile * green_fp;
 	char * gfname = get_filename(argv[1], 'g');
@@ -132,10 +151,10 @@ int main (int argc, char ** argv)
 
 	for (int bi = 1; bi < naxis[1]; bi += 2) {
 			for (int bj = 0; bj < naxis[0]; bj += 2) {
-					pos = (bi * naxis[1]) + bj;
+					pos = (bi * naxis[0]) + bj;
 					blue[pos + 1] = blue[pos];
-					blue[pos + naxis[1]] = blue[pos];
-					blue[pos + naxis[1] + 1] = blue[pos];
+					blue[pos + naxis[0]] = blue[pos];
+					blue[pos + naxis[0] + 1] = blue[pos];
 			}
 	}
 
