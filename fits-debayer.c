@@ -42,29 +42,13 @@ int copy_fits_header (fitsfile ** src, fitsfile ** dst)
 	return status;
 }
 
-int main (int argc, char ** argv)
+int debayer_image(char * filename)
 {
-	if (!argv[1]) {
-		fprintf(stderr, "Filename missing\n");
-		return 1;
-	}
-
 	/* Load File */
 	fitsfile * fptr;
 	int status = 0;
 
-	fits_open_file(&fptr, argv[1], READONLY, &status);
-
-	/* Print header */
-	char card[FLEN_CARD];
-	int nkeys;
-
-	fits_get_hdrspace(fptr, &nkeys, NULL, &status);
-
-	for (int i = 1; i < nkeys; i++) {
-		fits_read_record(fptr, i, card, &status);
-		printf("%s\n", card);
-	}
+	fits_open_file(&fptr, filename, READONLY, &status);
 
 	/* Get image size */
 	long naxis[2];
@@ -96,7 +80,7 @@ int main (int argc, char ** argv)
 	}
 
 	fitsfile * red_fp;
-	char * rfname = get_filename(argv[1], 'r');
+	char * rfname = get_filename(filename, 'r');
 
 	if (access(rfname, W_OK) != -1)
 		fits_open_file(&red_fp, rfname, READWRITE, &status);
@@ -130,7 +114,7 @@ int main (int argc, char ** argv)
 	}
 
 	fitsfile * green_fp;
-	char * gfname = get_filename(argv[1], 'g');
+	char * gfname = get_filename(filename, 'g');
 
 	if (access(gfname, W_OK) != -1)
 		fits_open_file(&green_fp, gfname, READWRITE, &status);
@@ -159,7 +143,7 @@ int main (int argc, char ** argv)
 	}
 
 	fitsfile * blue_fp;
-	char * bfname = get_filename(argv[1], 'b');
+	char * bfname = get_filename(filename, 'b');
 
 	if (access(bfname, W_OK) != -1)
 		fits_open_file(&blue_fp, bfname, READWRITE, &status);
@@ -177,6 +161,25 @@ int main (int argc, char ** argv)
 		fits_report_error(stdout, status);
 
 	return(status);
+}
+
+int main (int argc, char ** argv)
+{
+	int status = 0;
+
+	if (!argv[1]) {
+		fprintf(stderr, "Filename missing\n");
+		return 1;
+	}
+
+	for (int i = 1; i < argc; i++) {
+		status = debayer_image(argv[i]);
+
+		if (status)
+			fits_report_error(stdout, status);
+	}
+
+	return status;
 }
 
 // vim: tabstop=4 softtabstop=0 noexpandtab shiftwidth=4
