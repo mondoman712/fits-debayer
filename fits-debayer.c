@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <fitsio.h>
 #include <unistd.h>
+#include <getopt.h>
+
+const char * version_string = "v0.0";
 
 long * allocate_long_array (int size)
 {
@@ -166,14 +169,23 @@ int debayer_image(char * filename)
 int main (int argc, char ** argv)
 {
 	int status = 0;
+	int opt;
 
-	if (!argv[1]) {
-		fprintf(stderr, "Filename missing\n");
-		return 1;
+	static struct option long_options[] = {
+		{"version", 	no_argument, 	0, 	'V'},
+		{0, 			0, 				0, 	0}
+	};
+
+	while ((opt = getopt_long(argc, argv, "V", long_options, &opt)) != -1) {
+		switch (opt) {
+			case 'V':
+				printf("fits-debayer %s\n", version_string);
+				break;
+		}
 	}
 
-	for (int i = 1; i < argc; i++) {
-		status = debayer_image(argv[i]);
+	for (; optind < argc; optind++) {
+		status = debayer_image(argv[optind]);
 
 		if (status)
 			fits_report_error(stdout, status);
