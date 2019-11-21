@@ -171,9 +171,14 @@ int main (int argc, char ** argv)
 	int status = 0;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "v")) != -1) {
+	static struct option long_options[] = {
+		{"version", 	no_argument, 	0, 	'V'},
+		{0, 			0, 				0, 	0}
+	};
+
+	while ((opt = getopt_long(argc, argv, "V", long_options, &opt)) != -1) {
 		switch (opt) {
-			case 'v':
+			case 'V':
 				printf("fits-debayer %s\n", version_string);
 				break;
 		}
