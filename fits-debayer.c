@@ -173,22 +173,37 @@ int main (int argc, char ** argv)
 
 	static struct option long_options[] = {
 		{"version", 	no_argument, 	0, 	'V'},
+		{"help", 		no_argument, 	0, 	'h'},
 		{0, 			0, 				0, 	0}
 	};
 
-	while ((opt = getopt_long(argc, argv, "V", long_options, &opt)) != -1) {
-		switch (opt) {
-			case 'V':
-				printf("fits-debayer %s\n", version_string);
-				break;
+	if (argc == 1)
+		printf("Usage: fits-debayer [OPTION]... [FILE]...\
+				\nTry 'fits-debayer --help' for more information.\n");
+
+	while (optind < argc) {
+		if ((opt = getopt_long(argc, argv, "V", long_options, &opt)) != -1) {
+			switch (opt) {
+				case 'V':
+					printf("fits-debayer %s\n", version_string);
+					break;
+				case 'h':
+				case '?':
+					printf("Usage: fits-debayer [OPTION]... [FILE]...\
+							\nOptions:\
+							\n\t-V,\t--version\tDisplay program version\
+							\n\t-h,-?,\t--help\tDisplay this message\
+							\n");
+					break;
+			}
+		} else {
+			status = debayer_image(argv[optind]);
+
+			if (status)
+				fits_report_error(stdout, status);
+
+			optind++;
 		}
-	}
-
-	for (; optind < argc; optind++) {
-		status = debayer_image(argv[optind]);
-
-		if (status)
-			fits_report_error(stdout, status);
 	}
 
 	return status;
