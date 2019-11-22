@@ -205,10 +205,6 @@ int main (int argc, char ** argv)
 			}
 		} else {
 			status = debayer_image(argv[optind]);
-
-			if (status)
-				fits_report_error(stdout, status);
-
 			optind++;
 		}
 	}
