@@ -1,3 +1,10 @@
+/*
+    This file is part of fits-debayer,
+    copyright (c) 2018 Sam Smith.
+
+    fits-debayer is distributed under the MIT License.
+*/
+
 #include <string.h>
 #include <stdio.h>
 #include <fitsio.h>
