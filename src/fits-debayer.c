@@ -52,7 +52,7 @@ int copy_fits_header (fitsfile ** src, fitsfile ** dst)
 	return status;
 }
 
-int debayer_image(char * filename)
+int debayer_image (char * filename)
 {
 	/* Load File */
 	fitsfile * fptr;
